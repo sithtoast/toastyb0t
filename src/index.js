@@ -22,7 +22,7 @@ import { startWebServer } from './web.js';
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 if (!process.env.DISCORD_TOKEN) {
-  console.error('DISCORD_TOKEN is not set. Copy .env.example to .env and fill it in.');
+  console.error('DISCORD_TOKEN is not set. Put it in .env (see .env.example) or in your container\'s environment variables.');
   process.exit(1);
 }
 
@@ -238,7 +238,7 @@ client.once(Events.ClientReady, async (c) => {
       return null;
     });
   } else {
-    console.log('Web dashboard is off (set DISCORD_CLIENT_SECRET in .env to turn it on).');
+    console.log('Web dashboard is off (set DISCORD_CLIENT_SECRET to turn it on).');
   }
 });
 
@@ -274,6 +274,6 @@ process.once('SIGTERM', shutdown);
 process.once('SIGINT', shutdown);
 
 client.login(process.env.DISCORD_TOKEN).catch((err) => {
-  console.error(`Login failed: ${err.message} Check DISCORD_TOKEN in .env.`);
+  console.error(`Login failed: ${err.message} Check the DISCORD_TOKEN setting.`);
   process.exit(1);
 });

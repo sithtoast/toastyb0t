@@ -86,30 +86,57 @@ Each push to `main` publishes a prebuilt image for amd64 and arm64 (Raspberry Pi
 ghcr.io/sithtoast/toastyb0t:latest
 ```
 
-On a server you only need `docker-compose.yml` and a filled-in `.env` (see `.env.example`):
+On a server you only need `docker-compose.yml` and a filled-in `.env` next to it (see `.env.example`):
 
 ```bash
 docker compose pull && docker compose up -d
 ```
 
-To build from your local code instead, run `docker compose up -d --build`.
-
 - **Logs:** `docker compose logs -f`
 - **Stop:** `docker compose down`
 - **Update to the newest image:** run `docker compose pull && docker compose up -d` again.
-- **Pin a version:** push a git tag like `v1.0.0`, then use `ghcr.io/sithtoast/toastyb0t:1.0.0` in `docker-compose.yml`.
+- **Pin a version:** push a git tag like `v1.0.0`, then set `TOASTYB0T_TAG=1.0.0`.
+- **Run your local code:** `docker build -t ghcr.io/sithtoast/toastyb0t:dev . && TOASTYB0T_TAG=dev docker compose up -d`
 
 How the container is set up:
 
-- **Settings** live in the `toastyb0t_data` Docker volume, so they survive rebuilds and `down`/`up`. `docker compose down -v` would delete them.
-- **The dashboard** is published on `127.0.0.1:3000`, so only this machine can reach it. Point a reverse proxy at it for HTTPS. Inside the container it always listens on `0.0.0.0:3000`, whatever `.env` says.
-- **Security:** the bot runs as the unprivileged `node` user. `.env` is never copied into the image; it's read at startup.
+- **Settings** live in the `toastyb0t_data` Docker volume, so they survive updates and `down`/`up`. `docker compose down -v` would delete them.
+- **The dashboard** is published on `127.0.0.1:3000` by default, so only this machine can reach it. Set `DASHBOARD_LISTEN=3000` to allow your network, or point a reverse proxy at it for HTTPS.
+- **Security:** the bot runs as the unprivileged `node` user. Secrets are passed in as environment variables, never baked into the image.
 
 To move over settings from running the bot without Docker:
 
 ```bash
 docker compose cp data/config.json toastyb0t:/app/data/config.json && docker compose restart
 ```
+
+## Running in Portainer
+
+Use a **Stack** that pulls `docker-compose.yml` straight from GitHub, so Portainer stays in sync with the repo.
+
+1. **Stacks → Add stack**, name it `toastyb0t`, and choose **Repository**.
+2. Fill in the repository settings:
+   - Repository URL: `https://github.com/sithtoast/toastyb0t`
+   - Repository reference: `refs/heads/main`
+   - Compose path: `docker-compose.yml`
+   - Leave authentication off. The repo and image are public.
+3. Under **Environment variables**, add:
+
+   | Name | Value |
+   |---|---|
+   | `DISCORD_TOKEN` | your bot token (required) |
+   | `DISCORD_CLIENT_SECRET` | your OAuth2 client secret (turns on the dashboard) |
+   | `PUBLIC_URL` | the address you open the dashboard at, e.g. `https://toasty.example.com` or `http://192.168.1.20:3000` |
+   | `DASHBOARD_LISTEN` | `3000` to reach the dashboard from your network, or leave it out if a reverse proxy on the same host connects to it |
+
+   In the developer portal, add `PUBLIC_URL` + `/auth/callback` under **OAuth2 → Redirects**.
+4. **Deploy the stack.**
+
+**Updating.** Open the stack and click **Pull and redeploy**, with **Re-pull image** turned on. Your settings in the `toastyb0t_data` volume are kept.
+
+The stack's **GitOps updates** option redeploys only when the repo changes. The new image takes a few minutes to build after a push, so an automatic redeploy can pull the previous image. Redeploy by hand after the GitHub build finishes.
+
+If you'd rather not link the repo, choose **Web editor** in step 1, paste in `docker-compose.yml`, and do steps 3–4 the same way.
 
 ## Hosting
 
