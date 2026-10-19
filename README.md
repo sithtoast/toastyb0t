@@ -129,7 +129,7 @@ Use a **Stack** that pulls `docker-compose.yml` straight from GitHub, so Portain
    | `PUBLIC_URL` | the address you open the dashboard at, e.g. `https://toasty.example.com` or `http://192.168.1.20:3000` |
    | `DASHBOARD_LISTEN` | `3000` to reach the dashboard from your network, or leave it out if a reverse proxy on the same host connects to it |
 
-   In the developer portal, add `PUBLIC_URL` + `/auth/callback` under **OAuth2 → Redirects**.
+   In the developer portal, add `PUBLIC_URL` + `/auth/callback` under **OAuth2 → Redirects**. It must match exactly. If your site is served over HTTPS, `PUBLIC_URL` has to start with `https://` too, or Discord rejects the login as an invalid redirect. The bot logs a warning when the address people actually use doesn't match `PUBLIC_URL`.
 4. **Deploy the stack.**
 
 **Updating.** Open the stack and click **Pull and redeploy**, with **Re-pull image** turned on. Your settings in the `toastyb0t_data` volume are kept.

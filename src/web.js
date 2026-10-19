@@ -96,7 +96,26 @@ export function createApp(client, { publicUrl, clientSecret }) {
 
   // ---- Discord login ------------------------------------------------------
 
+  // Discord only accepts a redirect URI that exactly matches one in the developer
+  // portal, so a PUBLIC_URL that differs from the address people actually use
+  // (http vs https, wrong host) breaks login. Warn about it once.
+  let warnedOrigin = false;
+  function checkOrigin(req) {
+    if (warnedOrigin) return;
+    const proto = req.get('x-forwarded-proto')?.split(',')[0].trim() || req.protocol;
+    const host = req.get('x-forwarded-host')?.split(',')[0].trim() || req.get('host');
+    const seen = `${proto}://${host}`;
+    if (host && seen !== new URL(publicUrl).origin) {
+      warnedOrigin = true;
+      console.warn(
+        `Dashboard opened at ${seen}, but PUBLIC_URL is ${publicUrl}. Discord login will fail ` +
+          `unless ${redirectUri} is listed under OAuth2 → Redirects. Usually PUBLIC_URL should be ${seen}.`,
+      );
+    }
+  }
+
   app.get('/auth/login', (req, res) => {
+    checkOrigin(req);
     const state = randomBytes(16).toString('hex');
     res.cookie('oauth_state', state, { ...cookieOptions, maxAge: 10 * 60 * 1000 });
     const params = new URLSearchParams({
