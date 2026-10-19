@@ -1,0 +1,10 @@
+node_modules
+data
+.env
+.git
+*.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+.DS_Store
+.github

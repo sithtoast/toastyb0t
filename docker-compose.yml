@@ -1,0 +1,26 @@
+name: toastyb0t
+
+services:
+  toastyb0t:
+    build: .
+    # Prebuilt image from GitHub. `docker compose up -d --build` builds it from this folder instead.
+    image: ghcr.io/sithtoast/toastyb0t:latest
+    container_name: toastyb0t
+    restart: unless-stopped
+    init: true
+    # DISCORD_TOKEN, DISCORD_CLIENT_SECRET, PUBLIC_URL, DEV_GUILD_ID come from .env
+    env_file: .env
+    environment:
+      # Overrides any WEB_HOST/WEB_PORT in .env: inside the container the app
+      # must listen on 0.0.0.0:3000 for the port mapping below to work.
+      WEB_HOST: 0.0.0.0
+      WEB_PORT: 3000
+    ports:
+      # Dashboard is only reachable from this machine. Put a reverse proxy with
+      # HTTPS in front of it, or change to "3000:3000" to expose it on the network.
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - data:/app/data
+
+volumes:
+  data:

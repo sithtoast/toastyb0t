@@ -1,0 +1,17 @@
+{
+  "name": "toastyb0t",
+  "version": "1.0.0",
+  "description": "Self-hosted Discord bot: click a button to get a role.",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "express": "5.2.1"
+  }
+}
